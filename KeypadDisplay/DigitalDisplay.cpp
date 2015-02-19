@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #include "DigitalDisplay.h"
 
 DigitalDisplay::DigitalDisplay(byte pins[3][8]) {
@@ -9,6 +8,11 @@ DigitalDisplay::DigitalDisplay(byte pins[3][8]) {
       digitalWrite(_pins[i][j], LOW);
     }
   }
+  
+  currentDigit = 3;
+  buffer[0] = '\0';
+  buffer[1] = '\0';
+  buffer[2] = '\0';
 }
 
 void DigitalDisplay::displayNumber(int number) {
@@ -37,9 +41,21 @@ boolean DigitalDisplay::validate(byte digitOnDisplay, char charToDisplay) {
   if (digitOnDisplay < 1 || digitOnDisplay > 3) {
     Serial.println("Invalid digit to display on. Must be 1, 2, or 3.");
     return false;
-  } else if (charToDisplay < '0' || (charToDisplay > '9' && charToDisplay < 'A') || (charToDisplay > 'Z' && charToDisplay < 'a') || charToDisplay > 'z') {
-    Serial.println(charToDisplay);
-    Serial.println("Invalid character to print. Allowed values are a-z, A-Z, or 0-9");
+  } else if ((charToDisplay < '0' || (charToDisplay > '9' && charToDisplay < 'A') || (charToDisplay > 'Z' && charToDisplay < 'a') || charToDisplay > 'z') && charToDisplay != '\0') {
+    Serial.print(charToDisplay);
+    Serial.println(" is an invalid character to print. Allowed values are a-z, A-Z, or 0-9");
+    return false;
+  }
+  
+  return true;
+}
+
+boolean DigitalDisplay::validate(char charToDisplay) {
+  if ((charToDisplay < '0' || (charToDisplay > '9' && charToDisplay < 'A') || (charToDisplay > 'Z' && charToDisplay < 'a') || charToDisplay > 'z') && charToDisplay != '\0') {
+    Serial.print(charToDisplay);
+    Serial.println(" is an invalid character to print. Allowed values are a-z, A-Z, or 0-9");
+    return false;
+  } else if (charToDisplay == '\0') {
     return false;
   }
   
@@ -56,22 +72,78 @@ byte DigitalDisplay::getIndex(char c) {
   }
 }
 
-void DigitalDisplay::displayChar(byte digitOnDisplay, char charToDisplay) {
+boolean DigitalDisplay::displayChar(byte digitOnDisplay, char charToDisplay) {
   if (validate(digitOnDisplay, charToDisplay)) {
     byte charIndex = getIndex(charToDisplay);
       
     for (byte i = 0; i < 7; i++) {
       digitalWrite(_pins[digitOnDisplay-1][i], charArray[charIndex][i]);
     }
+    
+    buffer[digitOnDisplay-1] = charToDisplay;
+    
+    return true;
+  }
+  
+  return false;
+}
+
+void DigitalDisplay::shiftDigits(boolean wrap) {
+  if (wrap) {
+    char temp = buffer[0];
+    buffer[0] = buffer[1];
+    buffer[1] = buffer[2];
+    buffer[2] = temp;
+  } else {
+    buffer[0] = buffer[1];
+    buffer[1] = buffer[2];
+    buffer[2] = '\0';
+  }
+  
+  if (buffer[0] != '\0') {
+    displayChar(1, buffer[0]);
+  }
+  
+  if (buffer[1] != '\0') {
+    displayChar(2, buffer[1]);
+  }
+  
+  if (buffer[2] != '\0') {
+    displayChar(3, buffer[2]);
   }
 }
 
-void DigitalDisplay::clearDisplay() {
-  for (byte i = 0; i < 3; i++) {
-    for (byte j = 0; j < 8; j++) {
-      digitalWrite(_pins[i][j], LOW);
-    }
+boolean DigitalDisplay::displayChar(char charToDisplay) {
+  if (validate(charToDisplay) && currentDigit > 0) {        
+    shiftDigits(false);
+    
+    displayChar(3, charToDisplay);
+    
+    currentDigit--;
+    
+    return true;
   }
+  
+  return false;
+}
+
+String DigitalDisplay::getBuffer() {
+  String str;
+  
+  if (buffer[0]) {
+    str = String(buffer[0]);
+    str = str + buffer[1];
+    str = str + buffer[2];
+  } else if (buffer[1]) {
+    str = String(buffer[1]);
+    str = str + buffer[2];
+  } else if (buffer[2]) {
+    str = String(buffer[2]);
+  } else {
+    str = "empty"; 
+  }
+  
+  return str;
 }
 
 void DigitalDisplay::flash(int number, byte numTimes, unsigned int onTime, unsigned int offTime) {
@@ -83,4 +155,17 @@ void DigitalDisplay::flash(int number, byte numTimes, unsigned int onTime, unsig
     clearDisplay();
     delay(offTime);
   }
+}
+
+void DigitalDisplay::clearDisplay() {
+  for (byte i = 0; i < 3; i++) {
+    for (byte j = 0; j < 8; j++) {
+      digitalWrite(_pins[i][j], LOW);
+    }
+  }
+  
+  currentDigit = 3;
+  buffer[0] = '\0';
+  buffer[1] = '\0';
+  buffer[2] = '\0';
 }

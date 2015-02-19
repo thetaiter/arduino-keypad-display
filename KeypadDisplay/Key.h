@@ -7,18 +7,20 @@ class Key {
   private:
     char _keyChar;
     byte _pin;
-    unsigned int _currentState;
-    unsigned int _lastState;
+    byte _currentState;
+    byte _lastState;
   
   public:
     Key();
-    Key(char keyChar, byte pin);
+    Key(char keyChar, byte pin, byte lastState);
+    
     char getChar();
     byte getPin();
-    unsigned int getCurrentState();
-    unsigned int getLastState();
-    void setCurrentState(unsigned int state);
-    void setLastState(unsigned int state);
+    byte getCurrentState();
+    byte getLastState();
+    
+    void setCurrentState(byte state);
+    void setLastState(byte state);
 };
 
 #endif

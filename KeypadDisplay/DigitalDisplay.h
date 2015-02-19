@@ -45,14 +45,21 @@ const char charArray[36][7] = {
 class DigitalDisplay {
   private:
     byte _pins[3][8];
-    char buffer[3]; 
+    char buffer[3];
+    byte currentDigit;
+    
     boolean validate(byte digitOnDisplay, char charToDisplay);
+    boolean validate(char charToDisplay);
     byte getIndex(char c);
+    void shiftDigits(boolean wrap);
   
   public:
     DigitalDisplay(byte pins[3][8]);
+    
     void displayNumber(int number);
-    void displayChar(byte digitOnDisplay, char charToDisplay);
+    boolean displayChar(byte digitOnDisplay, char charToDisplay);
+    boolean displayChar(char charToDisplay);
+    String getBuffer();
     void flash(int number, byte numTimes, unsigned int onTime, unsigned int offTime);
     void clearDisplay();
 };

@@ -9,8 +9,8 @@ class Keypad {
     Key _keys[4][3];
   
   public:
-    Keypad(char keys[4][3], byte pins[4][3], byte buttonResistorPull);
-    Key getKey(char key);
+    Keypad(char keys[4][3], byte pins[4][3], byte buttonResistorPull, byte lastButtonState);
+    Key& scanKeys();
 };
 
 #endif

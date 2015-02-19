@@ -1,16 +1,15 @@
-#include "Arduino.h"
 #include "Key.h"
 
 Key::Key() {
-  _keyChar = ' ';
+  _keyChar = 0;
   _pin = -1;
   _lastState = LOW;
 }
 
-Key::Key(char keyChar, byte pin) {
+Key::Key(char keyChar, byte pin, byte lastState) {
   _keyChar = keyChar;
   _pin = pin;
-  _lastState = LOW;
+  _lastState = lastState;
 }
 
 char Key::getChar() {
@@ -21,18 +20,18 @@ byte Key::getPin() {
   return _pin;
 }
 
-unsigned int Key::getCurrentState() {
+byte Key::getCurrentState() {
   return _currentState;
 }
 
-unsigned int Key::getLastState() {
+byte Key::getLastState() {
   return _lastState;
 }
 
-void Key::setCurrentState(unsigned int state) {
+void Key::setCurrentState(byte state) {
   _currentState = state;
 }
 
-void Key::setLastState(unsigned int state) {
+void Key::setLastState(byte state) {
   _lastState = state;
 }

@@ -21,43 +21,27 @@ byte displayPins[3][8] = {
   { 32, 33, 40, 42, 43, 31, 41, 39 }   //Digit 3
 };
 
-Keypad keypad(keys, keypadPins, INPUT_PULLUP, 10);
+Keypad keypad(keys, keypadPins, INPUT_PULLUP, HIGH);
 DigitalDisplay disp(displayPins);
-byte currentDigit = 3;
-byte digit[3] = {0, 0, 0};
-byte buttonStates[4][3];
-byte lastButtonStates[4][3];
+int motorPosition = 0;
 
 void setup() {
+  disp.flash(888, 3, 200, 150);
+  
   Serial.begin(115200);
-  
-  for (byte i = 0; i < 4; i++) {
-    for (byte j = 0; j < 3; j++) {
-      lastButtonStates[i][j] = HIGH;
-    }
-  }
-  
-  disp.flash(888, 3, 500, 250);
-  
   Serial.println("Ready for input...");
 }
 
-byte hello;
-
 void loop() {
-  for (byte i = 0; i < 4; i++) {
-    for (byte j = 0; j < 3; j++) {
-      Key key = keypad.checkKey(keys[i][j]);
-      
-      buttonStates[i][j] = digitalRead(key.getPin());
-      
-      if (buttonStates[i][j] != lastButtonStates[i][j]) {
-        if (buttonStates[i][j] == LOW) {
-          disp.displayChar(3, key.getChar());
-        }
-      }
-      
-      lastButtonStates[i][j] = buttonStates[i][j];
+  Key key = keypad.scanKeys();
+  
+  if (key.getChar()) {
+    if (key.getChar() == '*') {
+      disp.clearDisplay();
+    } else if (key.getChar() == '#') {
+      Serial.println(disp.getBuffer());
+    } else {
+      disp.displayChar(key.getChar());
     }
   }
 }
